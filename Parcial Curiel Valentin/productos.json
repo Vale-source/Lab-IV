@@ -1,0 +1,17 @@
+[
+  {
+    "producto": "Arroz",
+    "precio": "1500",
+    "cantidad": "55"
+  },
+  {
+    "producto": "Arvejas",
+    "precio": "1100",
+    "cantidad": "43"
+  },
+  {
+    "producto": "Huevo",
+    "precio": "5000",
+    "cantidad": "24"
+  }
+]
