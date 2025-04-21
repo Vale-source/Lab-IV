@@ -2,6 +2,7 @@ import express from 'express';
 import { Router } from 'express';
 import { Task } from '../models/task.model';
 import { Sprint } from '../models/sprint.model';
+import { getTaskId } from '../controller/task.controller';
 
 export const taskRoute = Router();
 
@@ -14,15 +15,9 @@ taskRoute.get('/', async (req, res) => {
 	}
 });
 
-taskRoute.get('/tasks/:id', async (req, res) => {
+taskRoute.get('/tasks/:id', getTaskId, async (req, res) => {
 	try {
-		const task = await Task.findById(req.params.id);
-
-		if (!task) {
-			return res.status(400).json({ message: 'No se encontro tarea con ese ID' });
-		}
-
-		res.json(task);
+		res.json(res.task);
 	} catch (error) {
 		res.status(500).json({ message: error.message });
 	}
