@@ -2,11 +2,11 @@ import mongoose, { Schema, Types } from 'mongoose';
 
 const sprintSchema = new Schema({
 	fechaInicio: {
-		type: String,
+		type: Date,
 		required: true,
 	},
 	fechaCierre: {
-		type: String,
+		type: Date,
 		required: true,
 	},
 	tareas: [

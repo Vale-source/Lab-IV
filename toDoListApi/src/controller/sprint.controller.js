@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import { Sprint } from '../models/sprint.model.js';
+import { Backlog } from "../models/backlog.model.js"
 
 export const getSprints = async (req, res, next) => {
 	const sprint = await Sprint.find();
@@ -88,6 +89,16 @@ export const deleteSprint = async (req, res, next) => {
 
 export const createTaskInSprint = async (req, res, next) => {
 	const { id, taskId } = req.query;
+
+	const searchBacklog = await Backlog.findOne()
+
+	if (searchBacklog.tareas.includes(taskId)) {
+		await Backlog.findByIdAndUpdate(
+			searchBacklog._id,
+			{ $pull: { tareas: taskId } },
+			{ new: true },
+		);
+	}
 
 	const addTaskToSprint = await Sprint.findByIdAndUpdate(
 		id,

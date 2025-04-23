@@ -14,7 +14,7 @@ const taskSchema = new Schema({
 		require: true
 	},
 	fechaLimite: {
-		type: String,
+		type: Date,
 		require: true,
 	},
 	color: {
