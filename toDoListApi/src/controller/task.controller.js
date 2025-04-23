@@ -104,11 +104,16 @@ export const getTaskByEstado = async (req, res, next) => {
 };
 
 export const getTaskByFecha = async (req, res, next) => {
-	let task;
 
 	const filterDate = await Task.find().sort({ fechaLimite: -1 });
 
-	task = filterDate;
-	res.task = task;
+	const newArrayDate = filterDate.map((e) => {
+		return {
+			...e.toObject(),
+			fechaLimite: e.fechaLimite.toLocaleDateString('es-AR')
+		}
+	})
+
+	res.task = newArrayDate
 	next();
 };
