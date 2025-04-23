@@ -1,56 +1,40 @@
 import { Router } from 'express';
-import { Backlog } from '../models/backlog.model.js';
+import { addBacklog, addTaskToBacklog, getBacklogs } from '../controller/backlog.controller.js';
 
 export const backlogRoute = Router();
 
-backlogRoute.get('/', async (req, res) => {
+backlogRoute.get('/', getBacklogs, async (req, res) => {
 	try {
-		const backlog = await Backlog.find();
-		res.json(backlog);
+		res.json(res.backlog);
 	} catch (error) {
 		res.status(500).json({ error: error.message });
 	}
 });
 
-backlogRoute.post('/addbacklog', async (req, res) => {
+backlogRoute.post('/addbacklog', addBacklog, async (req, res) => {
 	try {
-		if (!req.body) {
-			return res.status(400).json({ message: 'Faltan parametros' });
-		}
-
-		const { tareas } = req.body;
-		const addBacklog = new Backlog({
-			tareas,
+		res.status(200).json({
+			message: 'Backlog creado correctamente',
+			backlog: res.backlog,
 		});
-		addBacklog.save();
-		res.json(addBacklog);
 	} catch (error) {
 		res.status(500).json({ message: error.message });
 	}
 });
 
-backlogRoute.put('/backlog/addtask/:taskId', async (req, res) => {
+backlogRoute.put('/taskinbacklog/addtask/', addTaskToBacklog, async (req, res) => {
 	try {
-		if (!addTaskToBacklog) {
-			return res.status(404).json({ message: 'No existe backlog' });
+		if (res.taskAdded) {
+			res.status(200).json({
+				message: 'Tarea agregada correctamente',
+				backlog: res.backlog,
+			});
+		} else {
+			res.status(200).json({
+				message: 'La tarea ya estaba en el backlog',
+				backlog: res.backlog,
+			});
 		}
-
-		const { taskId } = req.params;
-
-		const addTaskToBacklog = await Backlog.findOne();
-
-		if (!taskId) {
-			return res
-				.status(400)
-				.json({ message: 'No se encuentra tarea con ese ID' });
-		}
-
-		if (!addTaskToBacklog.tareas.includes(taskId)) {
-			addTaskToBacklog.tareas.push(taskId);
-			await addTaskToBacklog.save();
-		}
-
-		res.json(addTaskToBacklog);
 	} catch (error) {
 		res.status(500).json({ message: error.message });
 	}

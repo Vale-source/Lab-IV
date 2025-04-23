@@ -1,21 +1,17 @@
-import express from 'express';
 import { Router } from 'express';
-import { Task } from '../models/task.model';
-import { Sprint } from '../models/sprint.model';
-import { getTaskId } from '../controller/task.controller';
+import {
+	addTask,
+	deleteTaskById,
+	editTask,
+	getTaskByEstado,
+	getTaskByFecha,
+	getTaskId,
+	getTasks,
+} from '../controller/task.controller.js';
 
 export const taskRoute = Router();
 
-taskRoute.get('/', async (req, res) => {
-	try {
-		const task = await Task.find();
-		res.json(task);
-	} catch (error) {
-		res.status(500).json({ message: error.message });
-	}
-});
-
-taskRoute.get('/tasks/:id', getTaskId, async (req, res) => {
+taskRoute.get('/', getTasks, async (req, res) => {
 	try {
 		res.json(res.task);
 	} catch (error) {
@@ -23,102 +19,72 @@ taskRoute.get('/tasks/:id', getTaskId, async (req, res) => {
 	}
 });
 
-taskRoute.post('/addtask', async (req, res) => {
+taskRoute.get('/taskbyid', getTaskId, async (req, res) => {
 	try {
-		if (!req.body) {
-			return res.status(400).json({ message: 'Faltan parametros' });
-		}
-		const { titulo, descripcion, estado, fechaLimite, color } = req.body;
-		const task = new Task({
-			titulo,
-			descripcion,
-			estado,
-			fechaLimite,
-			color,
-		});
-
-		task.save();
-		res.json(task);
+		res.status(200).json(res.task);
 	} catch (error) {
 		res.status(500).json({ message: error.message });
 	}
 });
 
-taskRoute.put('/edittask/:id', async (req, res) => {
+taskRoute.post('/addtask', addTask, async (req, res) => {
 	try {
-		if (!req.body) {
-			return res
-				.status(400)
-				.json({ message: 'No se han enviados datos para actualizar' });
-		}
-		const edittask = await Task.findByIdAndUpdate(
-			req.params.id,
-			req.body,
-			{
-				new: true,
-			},
-		);
+		res.status(200).json({
+			message: 'Tarea creada correctamente',
+			task: res.task,
+		});
+	} catch (error) {
+		res.status(500).json({ message: error.message });
+	}
+});
 
-		if (!edittask) {
-			return res
-				.status(404)
-				.json({ message: 'No se encontro tarea para actualizar' });
-		}
-
-		res.json(edittask);
+taskRoute.put('/edittask', editTask, async (req, res) => {
+	try {
+		res.status(200).json({
+			message: 'Tarea editada correctamente',
+			task: res.task,
+		});
 	} catch (error) {
 		res.status(500).json({ error: error.message });
 	}
 });
 
-taskRoute.delete('/deletetask/:id', async (req, res) => {
+taskRoute.delete('/deletetask', deleteTaskById, async (req, res) => {
 	try {
-		const taskInSprint = Sprint.findOne({ tareas: id });
-
-		if (taskInSprint) {
-			return res
-				.json(400)
-				.json({
-					message:
-						'No se puede eliminar tarea porque esta asignada a un Sprint',
-				});
+		if (!res.deleted) {
+			res.json(400).json({
+				message:
+					'No se puede eliminar tarea porque esta asignada a un Sprint',
+			});
 		}
 
-		const { id } = req.params;
-		const deletetask = await Task.findByIdAndDelete(id);
-
-		if (!deletetask) {
-			return res
-				.status(404)
-				.json({ message: 'No se encontro tarea para eliminar' });
-		}
-
-		res.status(200).json({ message: 'Tarea eliminada correctamente', task: deletedTask });
+		res.status(200).json({
+			message: 'Tarea eliminada correctamente',
+			task: res.task,
+		});
 	} catch (error) {
 		res.status(500).json({ error: message.error });
 	}
 });
 
-taskRoute.get("/tasks", async (req, res) => {
+taskRoute.get('/taskbyestado', getTaskByEstado, async (req, res) => {
 	try {
-		const state = req.query.estado
-
-		const filterState = await Task.find({ estado: state })
-
-		res.json(filterState)
+		res.status(200).json({
+			message: `Tareas ${req.query.estado}`,
+			task: res.task,
+		});
 	} catch (error) {
 		res.status(500).json({ error: message.error });
 	}
-})
+});
 
-taskRoute.get("/tasksdate", async (req, res) => {
+taskRoute.get('/tasksdate', getTaskByFecha, async (req, res) => {
 	try {
-		const filterDate = await Task.find().sort({ fechaLimite: -1})
-
-		res.json(filterDate)
-
+		res.status(200).json({
+			message: 'Tareas ordenadas por fecha (descendente)',
+			task: res.task,
+		});
 	} catch (error) {
 		res.status(500).json({ error: message.error });
-
 	}
-})
+});
