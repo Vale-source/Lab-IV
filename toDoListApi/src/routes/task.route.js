@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router } from "express";
 import {
 	addTask,
 	deleteTaskById,
@@ -7,11 +7,12 @@ import {
 	getTaskByFecha,
 	getTaskId,
 	getTasks,
-} from '../controller/task.controller.js';
+} from "../controller/task.controller.js";
+import { addTaskToBacklog } from "../controller/backlog.controller.js";
 
 export const taskRoute = Router();
 
-taskRoute.get('/', getTasks, async (req, res) => {
+taskRoute.get("/", getTasks, async (req, res) => {
 	try {
 		res.json(res.task);
 	} catch (error) {
@@ -19,7 +20,7 @@ taskRoute.get('/', getTasks, async (req, res) => {
 	}
 });
 
-taskRoute.get('/taskbyid', getTaskId, async (req, res) => {
+taskRoute.get("/taskbyid", getTaskId, async (req, res) => {
 	try {
 		res.status(200).json(res.task);
 	} catch (error) {
@@ -27,21 +28,21 @@ taskRoute.get('/taskbyid', getTaskId, async (req, res) => {
 	}
 });
 
-taskRoute.post('/addtask', addTask, async (req, res) => {
+taskRoute.post("/addtask", addTask, addTaskToBacklog, async (req, res) => {
 	try {
 		res.status(200).json({
-			message: 'Tarea creada correctamente',
-			task: res.task,
+			message: "Tarea creada correctamente y agregada al backlog",
+			backlog: res.backlog,
 		});
 	} catch (error) {
 		res.status(500).json({ message: error.message });
 	}
 });
 
-taskRoute.put('/edittask', editTask, async (req, res) => {
+taskRoute.put("/edittask", editTask, async (req, res) => {
 	try {
 		res.status(200).json({
-			message: 'Tarea editada correctamente',
+			message: "Tarea editada correctamente",
 			task: res.task,
 		});
 	} catch (error) {
@@ -49,17 +50,16 @@ taskRoute.put('/edittask', editTask, async (req, res) => {
 	}
 });
 
-taskRoute.delete('/deletetask', deleteTaskById, async (req, res) => {
+taskRoute.delete("/deletetask", deleteTaskById, async (req, res) => {
 	try {
 		if (!res.deleted) {
 			res.json(400).json({
-				message:
-					'No se puede eliminar tarea porque esta asignada a un Sprint',
+				message: "No se puede eliminar tarea porque esta asignada a un Sprint",
 			});
 		}
 
 		res.status(200).json({
-			message: 'Tarea eliminada correctamente',
+			message: "Tarea eliminada correctamente",
 			task: res.task,
 		});
 	} catch (error) {
@@ -67,7 +67,7 @@ taskRoute.delete('/deletetask', deleteTaskById, async (req, res) => {
 	}
 });
 
-taskRoute.get('/taskbyestado', getTaskByEstado, async (req, res) => {
+taskRoute.get("/taskbyestado", getTaskByEstado, async (req, res) => {
 	try {
 		res.status(200).json({
 			message: `Tareas ${req.query.estado}`,
@@ -78,10 +78,10 @@ taskRoute.get('/taskbyestado', getTaskByEstado, async (req, res) => {
 	}
 });
 
-taskRoute.get('/tasksdate', getTaskByFecha, async (req, res) => {
+taskRoute.get("/tasksdate", getTaskByFecha, async (req, res) => {
 	try {
 		res.status(200).json({
-			message: 'Tareas ordenadas por fecha (descendente)',
+			message: "Tareas ordenadas por fecha (descendente)",
 			task: res.task,
 		});
 	} catch (error) {

@@ -6,6 +6,7 @@ import {
 	editSprint,
 	getSprintById,
 	getSprints,
+	showTaskInSprint,
 } from '../controller/sprint.controller.js';
 
 export const sprintRoute = Router();
@@ -73,3 +74,14 @@ sprintRoute.put(
 		}
 	},
 );
+
+sprintRoute.get('/taskbysprintid', showTaskInSprint, async (req,res) => {
+	try {
+		res.status(200).json({
+			message: "Tareas del sprint traidas correctamente",
+			sprint: res.sprint,
+		})
+	} catch (error) {
+		res.status(500).json({ error: error.message });
+	}
+})

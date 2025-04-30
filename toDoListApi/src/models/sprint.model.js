@@ -1,6 +1,10 @@
 import mongoose, { Schema, Types } from 'mongoose';
 
 const sprintSchema = new Schema({
+	nombre: {
+		type: String,
+		required: true,
+	},
 	fechaInicio: {
 		type: Date,
 		required: true,
@@ -16,9 +20,7 @@ const sprintSchema = new Schema({
 			default: [],
 		},
 	],
-	color: {
-		type: String,
-	},
+	
 });
 
 export const Sprint = mongoose.model("Sprint", sprintSchema)

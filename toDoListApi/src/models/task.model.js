@@ -17,9 +17,6 @@ const taskSchema = new Schema({
 		type: Date,
 		require: true,
 	},
-	color: {
-		type: String
-	}
 });
 
 export const Task = mongoose.model("Task", taskSchema)

@@ -1,12 +1,12 @@
-import mongoose from 'mongoose';
-import { Sprint } from '../models/sprint.model.js';
-import { Backlog } from "../models/backlog.model.js"
+import mongoose from "mongoose";
+import { Sprint } from "../models/sprint.model.js";
+import { Backlog } from "../models/backlog.model.js";
 
 export const getSprints = async (req, res, next) => {
 	const sprint = await Sprint.find();
-	res.sprint = sprint
-	next()
-}
+	res.sprint = sprint;
+	next();
+};
 
 export const getSprintById = async (req, res, next) => {
 	let sprint;
@@ -14,7 +14,7 @@ export const getSprintById = async (req, res, next) => {
 	const { id } = req.query;
 
 	if (!id || !mongoose.Types.ObjectId.isValid(id)) {
-		res.status(400).json({ messsage: 'No se encuentra task con ese id' });
+		res.status(400).json({ messsage: "No se encuentra task con ese id" });
 	}
 
 	sprint = await Sprint.findById(id);
@@ -26,27 +26,27 @@ export const addSprint = async (req, res, next) => {
 	let newSprint;
 
 	if (!req.body) {
-		return res.status(400).json({ message: 'Faltan parametros' });
+		return res.status(400).json({ message: "Faltan parametros" });
 	}
 
-	const { fechaInicio, fechaCierre, tareas, color } = req.body;
+	const { nombre, fechaInicio, fechaCierre, tareas } = req.body;
 	const sprint = {
+		nombre,
 		fechaInicio,
 		fechaCierre,
 		tareas,
-		color,
 	};
 
 	newSprint = await Sprint.create(sprint);
 	res.sprint = newSprint;
-	next();
+	return res.status(201).json(newSprint);
 };
 
 export const editSprint = async (req, res, next) => {
 	if (!req.body) {
 		return res
 			.status(400)
-			.json({ message: 'No se han enviado datos para actualizar' });
+			.json({ message: "No se han enviado datos para actualizar" });
 	}
 
 	const { id } = req.query;
@@ -56,7 +56,7 @@ export const editSprint = async (req, res, next) => {
 
 	if (!updateSprint) {
 		return res.status(404).json({
-			message: 'No se encontro sprint con ese ID para actualizar',
+			message: "No se encontro sprint con ese ID para actualizar",
 		});
 	}
 
@@ -69,7 +69,7 @@ export const deleteSprint = async (req, res, next) => {
 
 	if (!id || !id.match(/^[0-9a-fA-F]{24}$/)) {
 		return res.status(400).json({
-			message: 'ID no válido o no proporcionado',
+			message: "ID no válido o no proporcionado",
 		});
 	}
 
@@ -77,7 +77,7 @@ export const deleteSprint = async (req, res, next) => {
 
 	if (!deletedSprint) {
 		return res.status(404).json({
-			message: 'No se encontró un sprint con ese ID para eliminar',
+			message: "No se encontró un sprint con ese ID para eliminar",
 		});
 	}
 
@@ -86,38 +86,50 @@ export const deleteSprint = async (req, res, next) => {
 	next();
 };
 
-
 export const createTaskInSprint = async (req, res, next) => {
 	const { id, taskId } = req.query;
 
-	const searchBacklog = await Backlog.findOne()
+	const searchBacklog = await Backlog.findOne();
 
-	if (searchBacklog.tareas.includes(taskId)) {
-		await Backlog.findByIdAndUpdate(
-			searchBacklog._id,
-			{ $pull: { tareas: taskId } },
-			{ new: true },
-		);
+	if (searchBacklog) {
+		if (searchBacklog.tareas.includes(taskId)) {
+			await Backlog.updateOne({ $pull: { tareas: taskId } }, { new: true });
+		}
 	}
 
 	const addTaskToSprint = await Sprint.findByIdAndUpdate(
 		id,
 		{ $push: { tareas: taskId } },
-		{ new: true },
+		{ new: true }
 	);
 
 	if (!addTaskToSprint) {
-		return res
-			.status(404)
-			.json({ message: 'No se encotro sprint con ese ID' });
+		return res.status(404).json({
+			message: "No se encontró sprint con ese ID",
+		});
 	}
 
 	if (!taskId) {
-		return res
-			.status(404)
-			.json({ message: 'No se encontro tarea con ese ID' });
+		return res.status(400).json({
+			message: "No se encontró tarea con ese ID",
+		});
 	}
 
 	res.sprint = addTaskToSprint;
+	next();
+};
+
+export const showTaskInSprint = async (req, res, next) => {
+	const { sprintId } = req.query;
+
+	if (!sprintId) {
+		return res.status(404).json({
+			message: "No se encontro sprint con ese ID",
+		});
+	}
+
+	const getTasksbySprintId = await Sprint.findById(sprintId).populate("tareas");
+
+	res.sprint = getTasksbySprintId;
 	next();
 };
