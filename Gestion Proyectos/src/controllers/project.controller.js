@@ -3,7 +3,7 @@ import { Project } from "../models/Project";
 import { Researcher } from "../models/Researcher";
 
 export const getAllProjects = async (req, res, next) => {
-    const projects = await Project.find().populate("investigadores");
+	const projects = await Project.find().populate("investigadores");
 
 	res.project = projects;
 	next();
@@ -43,9 +43,29 @@ export const addProject = async (req, res, next) => {
 export const editProject = async (req, res, next) => {
 	const { projectId } = req.query;
 
-	const updateProject = await Project.findByIdAndUpdate(projectId, req.body, {
-		new: true,
-	});
+	const projectBody = (({
+		nombre,
+		descripcion,
+		fechaInicio,
+		fechaFinal,
+		estado,
+		investigadores,
+	}) => ({
+		nombre,
+		descripcion,
+		fechaInicio,
+		fechaFinal,
+		estado,
+		investigadores,
+	}))(req.body);
+
+	const updateProject = await Project.findByIdAndUpdate(
+		projectId,
+		projectBody,
+		{
+			new: true,
+		}
+	);
 
 	res.project = updateProject;
 	next();
@@ -60,13 +80,26 @@ export const addResearcherToProject = async (req, res, next) => {
 		{ new: true }
 	);
 
-    const addProject = await Researcher.findByIdAndUpdate(
-        researcherId,
-        { $push: { proyectos: projectId } },
-        { new: true }
-    )
+	const addProject = await Researcher.findByIdAndUpdate(
+		researcherId,
+		{ $push: { proyectos: projectId } },
+		{ new: true }
+	);
 
-    res.project = addResearcher
-    res.researcher = addProject
-    next()
+	res.project = addResearcher;
+	res.researcher = addProject;
+	next();
+};
+
+export const deleteProject = async (req, res, next) => {
+	const projects = res.project;
+
+	const delProject = await Project.deleteOne({ _id: projects._id });
+
+	await Researcher.updateMany(
+		{ proyectos: projects._id },
+		{ $pull: { proyectos: projects._id } }
+	);
+
+	res.project = delProject;
 };
