@@ -3,7 +3,7 @@ import { Sprint } from "../models/sprint.model.js";
 import { Backlog } from "../models/backlog.model.js";
 
 export const getSprints = async (req, res, next) => {
-	const sprint = await Sprint.find();
+	const sprint = await Sprint.find().populate("tareas");
 	res.sprint = sprint;
 	next();
 };
@@ -87,37 +87,43 @@ export const deleteSprint = async (req, res, next) => {
 };
 
 export const createTaskInSprint = async (req, res, next) => {
-	const { id, taskId } = req.query;
+	try {
+		const { id, taskId } = req.query;
 
-	const searchBacklog = await Backlog.findOne();
-
-	if (searchBacklog) {
-		if (searchBacklog.tareas.includes(taskId)) {
-			await Backlog.updateOne({ $pull: { tareas: taskId } }, { new: true });
+		if (!id || !taskId) {
+			return res.status(400).json({
+				message: "Faltan parámetros: id de sprint o id de tarea",
+			});
 		}
+
+		const searchBacklog = await Backlog.findOne();
+		if (searchBacklog?.tareas.includes(taskId)) {
+			await Backlog.updateOne(
+				{ _id: searchBacklog._id },
+				{ $pull: { tareas: taskId } }
+			);
+		}
+
+		const updatedSprint = await Sprint.findByIdAndUpdate(
+			id,
+			{ $push: { tareas: taskId } },
+			{ new: true }
+		);
+
+		if (!updatedSprint) {
+			return res.status(404).json({
+				message: "No se encontró sprint con ese ID",
+			});
+		}
+
+		res.sprint = updatedSprint;
+		next();
+	} catch (error) {
+		console.error("Error en createTaskInSprint:", error);
+		res.status(500).json({ message: "Error interno del servidor" });
 	}
-
-	const addTaskToSprint = await Sprint.findByIdAndUpdate(
-		id,
-		{ $push: { tareas: taskId } },
-		{ new: true }
-	);
-
-	if (!addTaskToSprint) {
-		return res.status(404).json({
-			message: "No se encontró sprint con ese ID",
-		});
-	}
-
-	if (!taskId) {
-		return res.status(400).json({
-			message: "No se encontró tarea con ese ID",
-		});
-	}
-
-	res.sprint = addTaskToSprint;
-	next();
 };
+
 
 export const showTaskInSprint = async (req, res, next) => {
 	const { sprintId } = req.query;

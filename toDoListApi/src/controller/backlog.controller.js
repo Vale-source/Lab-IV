@@ -63,3 +63,38 @@ export const initialBacklog = async () => {
 	}
 };
 
+export const getAllTasksFromBacklog = async (req, res, next) => {
+	const backlog = await Backlog.findOne().populate("tareas");
+
+	if (!backlog) {
+		return res.status(404).json({
+			message: "No existe backlog",
+		});
+	}
+
+	res.backlog = backlog;
+	next();
+}
+
+export const deleteTaskFromBacklog = async (req, res, next) => {
+	const { id } = req.query;
+
+	if (!id) {
+		return res.status(400).json({ message: "Faltan parametros" });
+	}
+
+	const deletedTask = await Backlog.findOneAndUpdate(
+		{},
+		{ $pull: { tareas: id } },
+		{ new: true }
+	);
+
+	if (!deletedTask) {
+		return res.status(404).json({
+			message: "No existe backlog",
+		});
+	}
+
+	res.deletedTask = deletedTask;
+	next();
+};

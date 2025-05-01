@@ -30,7 +30,6 @@ sprintRoute.get('/sprintbyid', getSprintById, async (req, res) => {
 sprintRoute.post('/addsprint', addSprint, async (req, res) => {
 	try {
 		res.status(200).json({
-			message: 'Sprint creado correctamente',
 			sprint: res.sprint,
 		});
 	} catch (error) {

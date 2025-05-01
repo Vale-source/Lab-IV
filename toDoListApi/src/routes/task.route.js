@@ -31,9 +31,8 @@ taskRoute.get("/taskbyid", getTaskId, async (req, res) => {
 taskRoute.post("/addtask", addTask, addTaskToBacklog, async (req, res) => {
 	try {
 		res.status(200).json({
-			message: "Tarea creada correctamente y agregada al backlog",
-			backlog: res.backlog,
-		});
+			task: res.task
+		}); 
 	} catch (error) {
 		res.status(500).json({ message: error.message });
 	}
